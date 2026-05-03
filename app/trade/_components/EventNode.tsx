@@ -24,12 +24,14 @@ type Props = {
     payload: Record<string, unknown>;
     effectiveAt: string;
     isLatest: boolean;
+    isProjected?: boolean;
   };
 };
 
 export function EventNode({ data }: Props) {
   const colorClasses = EVENT_COLOR[data.eventType];
   const subtitle = renderSubtitle(data.eventType, data.payload);
+  const dateLabel = data.effectiveAt.slice(0, 10);
 
   return (
     <div
@@ -37,13 +39,14 @@ export function EventNode({ data }: Props) {
         'rounded-md border-2 bg-panel-elevated px-3 py-2 shadow-sm font-mono text-xs',
         'min-w-[180px] max-w-[200px]',
         colorClasses,
-        data.isLatest && 'ring-2 ring-accent ring-offset-1 ring-offset-background',
+        data.isLatest && !data.isProjected && 'ring-2 ring-accent ring-offset-1 ring-offset-background',
+        data.isProjected && 'border-dashed opacity-60 bg-transparent',
       )}
     >
       <Handle type="target" position={Position.Left} className="!bg-border-strong !border-border" />
       <div className="flex items-center justify-between text-[10px] uppercase tracking-wider opacity-70">
-        <span>#{data.sequenceNo}</span>
-        <span>{data.effectiveAt.slice(0, 10)}</span>
+        <span>{data.isProjected ? 'proj' : `#${data.sequenceNo}`}</span>
+        <span>{data.isProjected ? `~${dateLabel}` : dateLabel}</span>
       </div>
       <div className="font-semibold mt-0.5 text-[13px]">{data.eventType}</div>
       {subtitle && <div className="text-[11px] text-foreground/80 mt-0.5">{subtitle}</div>}
