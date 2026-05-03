@@ -1,5 +1,7 @@
 # Post-Trade Book of Record
 
+**🔗 Live demo: [post-trade-demo.vercel.app/trade](https://post-trade-demo.vercel.app/trade)**
+
 An append-only post-trade execution & lifecycle management demo for a macro hedge fund. Captures **Interest Rate Swaps, Futures, Treasuries, and FX (Spot/Forward/Swap)** in G10 currencies. Lifecycle events (rate resets, coupons, novations, terminations, rolls, partial unwinds) accrete onto positions as a DAG.
 
 The whole demo is one page — `/trade` — with four quadrants:
