@@ -4,20 +4,50 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:db": "tsx scripts/dev-db.ts",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:migrate": "tsx lib/db/migrate.ts",
+    "seed": "tsx scripts/seed.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.65.0",
+    "@hookform/resolvers": "^5.2.2",
+    "@xyflow/react": "^12.8.6",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "dagre": "^0.8.5",
+    "drizzle-orm": "^0.45.2",
+    "lucide-react": "^1.11.0",
     "next": "16.2.4",
+    "postgres": "^3.4.9",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-dom": "19.2.4",
+    "react-hook-form": "^7.73.1",
+    "sonner": "^2.0.7",
+    "tailwind-merge": "^3.5.0",
+    "zod": "^4.3.6",
+    "zod-to-json-schema": "^3.24.7",
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/dagre": "^0.7.53",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.5",
+    "dotenv": "^17.4.2",
+    "drizzle-kit": "^0.31.10",
+    "embedded-postgres": "^18.3.0-beta.17",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "tsx": "^4.21.0",
+    "typescript": "^5",
+    "vitest": "^4.1.5"
   }
 }
