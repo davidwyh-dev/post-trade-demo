@@ -97,5 +97,5 @@ body {
 .react-flow__handle { background: var(--border-strong); border-color: var(--border); }
 .react-flow__attribution { background: transparent !important; color: var(--muted-foreground); }
 .react-flow__controls { background: var(--panel-elevated); border: 1px solid var(--border); }
-.react-flow__controls-button { background: var(--panel-elevated); border-color: var(--border); color: var(--foreground); }
-.react-flow__controls-button:hover { background: var(--muted); }
+.react-flow__controls-button { background: var(--panel-elevated) !important; border-color: var(--border) !important; color: var(--foreground) !important; }
+.react-flow__controls-button:hover { background: var(--accent) !important; color: var(--background) !important; }
