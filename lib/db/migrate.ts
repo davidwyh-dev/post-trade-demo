@@ -6,6 +6,7 @@
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import postgres from 'postgres';
+import { config as loadEnv } from 'dotenv';
 
 export async function applyMigrations(databaseUrl: string, migrationsDir: string) {
   const sql = postgres(databaseUrl, { max: 1, onnotice: () => {}, connect_timeout: 60 });
@@ -24,10 +25,8 @@ export async function applyMigrations(databaseUrl: string, migrationsDir: string
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  // Load .env.local for CLI invocations.
-  const { config } = await import('dotenv');
-  const { resolve } = await import('node:path');
-  config({ path: resolve(process.cwd(), '.env.local') });
+  // Load .env.local for CLI invocations. Inline shell env wins over the file.
+  loadEnv({ path: path.resolve(process.cwd(), '.env.local') });
 
   const url = process.env.DATABASE_URL_WRITER ?? process.env.DATABASE_URL;
   if (!url) {
