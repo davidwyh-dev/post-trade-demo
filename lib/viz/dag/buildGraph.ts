@@ -8,12 +8,14 @@ export type DagNode = {
   payload: Record<string, unknown>;
   effectiveAt: string; // ISO date
   isLatest: boolean;
+  isProjected?: boolean;
 };
 
 export type DagEdge = {
   id: string;
   source: string;
   target: string;
+  isProjected?: boolean;
 };
 
 export function buildGraph(events: Event[]): { nodes: DagNode[]; edges: DagEdge[] } {

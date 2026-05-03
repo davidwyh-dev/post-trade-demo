@@ -15,6 +15,7 @@ type State = {
   detailsMode: DetailsMode;
   cliText: string;
   cliBusy: boolean;
+  showProjected: boolean;
 
   setPositions: (positions: Position[]) => void;
   setEvents: (events: Event[]) => void;
@@ -22,6 +23,7 @@ type State = {
   setDetailsMode: (mode: DetailsMode) => void;
   setCliText: (text: string) => void;
   setCliBusy: (busy: boolean) => void;
+  setShowProjected: (v: boolean) => void;
 };
 
 export const useTradeStore = create<State>((set) => ({
@@ -31,6 +33,7 @@ export const useTradeStore = create<State>((set) => ({
   detailsMode: { kind: 'idle' },
   cliText: '',
   cliBusy: false,
+  showProjected: false,
 
   setPositions: (positions) => set({ positions }),
   setEvents: (events) => set({ events }),
@@ -42,4 +45,5 @@ export const useTradeStore = create<State>((set) => ({
   setDetailsMode: (detailsMode) => set({ detailsMode }),
   setCliText: (cliText) => set({ cliText }),
   setCliBusy: (cliBusy) => set({ cliBusy }),
+  setShowProjected: (showProjected) => set({ showProjected }),
 }));
