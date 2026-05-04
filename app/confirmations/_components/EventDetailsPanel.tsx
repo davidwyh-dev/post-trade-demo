@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useConfirmationsStore } from '@/lib/store/confirmationsStore';
@@ -103,7 +103,7 @@ export function EventDetailsPanel({ onReload }: { onReload: () => void }) {
         )}
       </header>
 
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4 text-sm">
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3 text-sm">
         <section>
           <div className="flex items-center justify-between mb-2">
             <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</h3>
@@ -144,7 +144,7 @@ export function EventDetailsPanel({ onReload }: { onReload: () => void }) {
           </p>
         </section>
 
-        <section>
+        <section className="border-t border-border pt-3">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
             Event payload
             {amended && (
@@ -162,42 +162,40 @@ export function EventDetailsPanel({ onReload }: { onReload: () => void }) {
           )}
         </section>
 
-        <section>
+        <section className="border-t border-border pt-3">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
             Adjust (append AMEND event)
           </h3>
           <AmendmentForm event={event} onSubmitted={onReload} />
         </section>
 
-        <section>
+        <section className="border-t border-border pt-3">
           <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">
             Position
           </h3>
-          <div className="rounded border border-border bg-panel-elevated px-3 py-2 text-xs">
-            <div className="font-medium mb-1">
-              #{event.position.id} · {event.position.product}
-              <span className={cn(
-                'ml-2 px-1.5 py-0.5 rounded text-[10px] font-medium',
-                event.position.status === 'OPEN'        && 'bg-status-open/15 text-status-open',
-                event.position.status === 'CLOSED'     && 'bg-status-closed/15 text-status-closed',
-                event.position.status === 'TERMINATED' && 'bg-status-terminated/15 text-status-terminated',
-              )}>
-                {event.position.status}
-              </span>
-            </div>
-            <div className="text-muted-foreground space-y-0.5">
-              {Object.entries(params).map(([k, v]) => (
-                <div key={k} className="grid grid-cols-[120px_1fr] gap-2 font-mono">
-                  <span>{k}</span>
-                  <span className="text-foreground/80 truncate">
-                    {typeof v === 'number' && k === 'notional' ? formatNotional(v, params.currency as string)
-                     : typeof v === 'number' && k === 'initialFaceAmount' ? formatNotional(v, params.currency as string)
-                     : String(v)}
-                  </span>
-                </div>
-              ))}
-            </div>
+          <div className="text-sm font-medium mb-2">
+            #{event.position.id} · {event.position.product}
+            <span className={cn(
+              'ml-2 px-1.5 py-0.5 rounded text-[10px] font-medium',
+              event.position.status === 'OPEN'        && 'bg-status-open/15 text-status-open',
+              event.position.status === 'CLOSED'     && 'bg-status-closed/15 text-status-closed',
+              event.position.status === 'TERMINATED' && 'bg-status-terminated/15 text-status-terminated',
+            )}>
+              {event.position.status}
+            </span>
           </div>
+          <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-1 text-xs font-mono">
+            {Object.entries(params).map(([k, v]) => (
+              <Fragment key={k}>
+                <dt className="text-muted-foreground">{k}</dt>
+                <dd className="truncate">
+                  {typeof v === 'number' && k === 'notional' ? formatNotional(v, params.currency as string)
+                   : typeof v === 'number' && k === 'initialFaceAmount' ? formatNotional(v, params.currency as string)
+                   : String(v)}
+                </dd>
+              </Fragment>
+            ))}
+          </dl>
         </section>
       </div>
     </div>
@@ -211,7 +209,7 @@ function KeyValueGrid({ data, highlightKeys = [] }: { data: Record<string, unkno
   }
   const highlight = new Set(highlightKeys);
   return (
-    <div className="rounded border border-border bg-panel-elevated px-3 py-2 text-xs space-y-0.5 font-mono">
+    <div className="text-xs space-y-0.5 font-mono">
       {keys.map((k) => (
         <div key={k} className={cn(
           'grid grid-cols-[140px_1fr] gap-2',
@@ -299,7 +297,7 @@ function AmendmentForm({ event, onSubmitted }: {
   }
 
   return (
-    <div className="rounded border border-border bg-panel-elevated px-3 py-2 text-xs space-y-2">
+    <div className="text-xs space-y-2">
       {adjustable.map((f) => (
         <label key={f.name} className="grid grid-cols-[140px_1fr] gap-2 items-center font-mono">
           <span className="text-muted-foreground">{f.name}</span>
