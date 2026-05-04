@@ -19,7 +19,14 @@ export function ConfirmationsWorkspace() {
     setLoading(true);
     try {
       const res = await fetch(`/api/events?from=${fromDate}&to=${toDate}`);
-      const j = await res.json();
+      // A bare 500 with no body would .json()-throw; surface that as a
+      // clearer message than "Unexpected end of JSON input".
+      const text = await res.text();
+      if (!text) {
+        toast.error(`Server returned empty ${res.status} response. Check server logs and DB migrations.`);
+        return;
+      }
+      const j = JSON.parse(text);
       if (!j.ok) {
         toast.error(j.error?.message ?? 'Failed to load events');
         return;
