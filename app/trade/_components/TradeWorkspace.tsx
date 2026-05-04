@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { useTradeStore } from '@/lib/store/tradeStore';
+import { AppNav } from '@/app/_components/AppNav';
 import { PositionTable } from './PositionTable';
 import { PositionDetails } from './PositionDetails';
 import { EventDag } from './EventDag';
@@ -35,7 +36,9 @@ export function TradeWorkspace() {
 
   return (
     <div className="grid h-screen w-screen text-foreground"
-         style={{ gridTemplateRows: 'minmax(0, 1fr) minmax(0, 1.4fr) auto', gridTemplateColumns: '1fr' }}>
+         style={{ gridTemplateRows: 'auto minmax(0, 1fr) minmax(0, 1.4fr) auto', gridTemplateColumns: '1fr' }}>
+      <AppNav />
+
       {/* Top: Position Table */}
       <section className="border-b border-border min-h-0 overflow-hidden">
         <PositionTable />

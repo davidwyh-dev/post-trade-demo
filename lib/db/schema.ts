@@ -2,6 +2,7 @@ import {
   pgTable,
   bigserial,
   bigint,
+  boolean,
   integer,
   text,
   char,
@@ -65,9 +66,33 @@ export const events = pgTable(
   ],
 );
 
+// Operational confirmation state per event. Sibling to the append-only ledger;
+// rows here ARE mutable. See drizzle/0002_event_confirmations.sql for schema.
+export const eventConfirmations = pgTable('event_confirmations', {
+  id:                  bigserial('id', { mode: 'number' }).primaryKey(),
+  eventId:             bigint('event_id', { mode: 'number' }).notNull().unique().references(() => events.id),
+  amountConfirmed:     boolean('amount_confirmed').notNull().default(false),
+  amountConfirmedAt:   timestamp('amount_confirmed_at', { withTimezone: true }),
+  reconciled:          boolean('reconciled').notNull().default(false),
+  reconciledAt:        timestamp('reconciled_at', { withTimezone: true }),
+  notes:               text('notes'),
+  createdAt:           timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt:           timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Derived status for an event from its (optional) confirmation row.
+export type ConfirmationStatus = 'PENDING' | 'AMOUNT_CONFIRMED' | 'SETTLED';
+export function deriveConfirmationStatus(c: { amountConfirmed: boolean; reconciled: boolean } | null | undefined): ConfirmationStatus {
+  if (!c) return 'PENDING';
+  if (c.reconciled && c.amountConfirmed) return 'SETTLED';
+  if (c.amountConfirmed) return 'AMOUNT_CONFIRMED';
+  return 'PENDING';
+}
+
 export type Counterparty = typeof counterparties.$inferSelect;
 export type Position     = typeof positions.$inferSelect;
 export type Event        = typeof events.$inferSelect;
+export type EventConfirmation = typeof eventConfirmations.$inferSelect;
 export type ProductType  = (typeof productType.enumValues)[number];
 export type EventType    = (typeof eventType.enumValues)[number];
 export type PositionStatus = (typeof positionStatus.enumValues)[number];

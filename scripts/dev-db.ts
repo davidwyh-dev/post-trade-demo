@@ -9,7 +9,9 @@ import path from 'node:path';
 import { applyMigrations } from '../lib/db/migrate';
 
 const DATA_DIR = path.resolve(process.cwd(), '.dev-pg');
-const PORT = 54330;
+// Default 54330; override with EMBEDDED_PG_PORT when sharing a machine with a
+// sibling project that already binds the default.
+const PORT = Number(process.env.EMBEDDED_PG_PORT ?? 54330);
 const PASSWORD = 'dev';
 const DATABASE_URL = `postgres://postgres:${PASSWORD}@127.0.0.1:${PORT}/postgres`;
 

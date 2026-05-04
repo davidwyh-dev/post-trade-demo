@@ -63,7 +63,7 @@ export function PositionTable() {
             {positions.length === 0 && (
               <tr>
                 <td colSpan={7} className="text-center text-muted-foreground py-6 text-xs">
-                  No positions. Type a trade in the CLI below or click "+ New position".
+                  No positions. Type a trade in the CLI below or click &ldquo;+ New position&rdquo;.
                 </td>
               </tr>
             )}
