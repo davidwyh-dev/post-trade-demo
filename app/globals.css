@@ -55,6 +55,16 @@
   --color-status-closed: var(--status-closed);
   --color-status-terminated: var(--status-terminated);
   --color-invariant: var(--invariant);
+  --color-event-new: var(--event-new);
+  --color-event-amend: var(--event-amend);
+  --color-event-rate-reset: var(--event-rate-reset);
+  --color-event-coupon: var(--event-coupon);
+  --color-event-novation: var(--event-novation);
+  --color-event-termination: var(--event-termination);
+  --color-event-roll: var(--event-roll);
+  --color-event-expiry: var(--event-expiry);
+  --color-event-cancel: var(--event-cancel);
+  --color-event-partial-unwind: var(--event-partial-unwind);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

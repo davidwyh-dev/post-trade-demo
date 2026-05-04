@@ -19,15 +19,31 @@ function effective(input: { effectiveAt?: string }): Date | undefined {
   return input.effectiveAt ? new Date(input.effectiveAt) : undefined;
 }
 
+// AMEND has two shapes:
+//   1. Position-level (the original): newNotional / newRate / newQuantity
+//   2. Event-level restatement: targetEventSequenceNo + overrides (e.g., correct
+//      a RATE_RESET's fixingRate). Used by the Confirmations page when an
+//      operator adjusts a prior event during amount-confirmation.
+//
+// At least one of (newNotional | newRate | newQuantity | overrides) must be set.
 const AmendPayload = z.object({
   ...idem,
-  newNotional:  z.number().positive().optional(),
-  newRate:      z.number().optional(),
-  newQuantity:  z.number().int().optional(),
-  reason:       z.string().optional(),
+  newNotional:            z.number().positive().optional(),
+  newRate:                z.number().optional(),
+  newQuantity:            z.number().int().optional(),
+  reason:                 z.string().optional(),
+  targetEventSequenceNo:  z.number().int().positive().optional(),
+  overrides:              z.record(z.string(), z.unknown()).optional(),
 }).refine(
-  (v) => v.newNotional !== undefined || v.newRate !== undefined || v.newQuantity !== undefined,
-  { message: 'AMEND requires at least one of newNotional, newRate, newQuantity' },
+  (v) =>
+    v.newNotional !== undefined ||
+    v.newRate !== undefined ||
+    v.newQuantity !== undefined ||
+    (v.overrides !== undefined && Object.keys(v.overrides).length > 0),
+  { message: 'AMEND requires at least one of newNotional, newRate, newQuantity, or overrides' },
+).refine(
+  (v) => v.targetEventSequenceNo === undefined || (v.overrides !== undefined && Object.keys(v.overrides).length > 0),
+  { message: 'AMEND with targetEventSequenceNo requires non-empty overrides' },
 );
 
 const RateResetPayload = z.object({
@@ -96,6 +112,9 @@ export const FLOW_REGISTRY = {
     run: async (sql: Sql, positionId: number, p: unknown): Promise<FlowResult> => {
       const v = AmendPayload.parse(p);
       const { externalId, effectiveAt: _e, ...payload } = v;
+      // payload retains targetEventSequenceNo + overrides when present, so a
+      // reader can walk the event chain and find the latest amendment for
+      // a given prior sequence_no.
       return appendEvent(sql, {
         positionId, eventType: 'AMEND', payload, externalId, effectiveAt: effective(v),
       });
