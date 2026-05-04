@@ -80,13 +80,28 @@ npm run dev:db   # terminal 1 (without --fresh — preserves data)
 npm run dev      # terminal 2
 ```
 
+### Migrations
+
+Hand-authored SQL files live in `drizzle/` and run in lexicographic order. Applied files are tracked in a `schema_migrations` table (filename + checksum), so re-running the migrator is safe — already-applied files are skipped and a content change to an applied file errors out.
+
+For local dev, `npm run dev:db` calls the migrator on every start. For a deployed DB:
+
+```bash
+DATABASE_URL=<prod-url> npm run db:migrate          # apply any new files
+DATABASE_URL=<prod-url> npm run db:migrate -- --baseline   # one-time, on a pre-existing DB:
+                                                            # mark current files as applied
+                                                            # without running them
+```
+
+Use `--baseline` once when bringing a DB that was migrated before tracking existed into the system. Subsequent runs apply only new files.
+
 ### Tests
 
 ```bash
 npm test
 ```
 
-33 tests covering: append-only triggers, sequence-density invariants, lifecycle invariants (first-event-must-be-NEW), position-key determinism per product, end-to-end position creation, idempotent retries, branching DAGs (PARTIAL_UNWIND), and all four product types.
+46 tests covering: append-only triggers, sequence-density invariants, lifecycle invariants (first-event-must-be-NEW), position-key determinism per product, end-to-end position creation, idempotent retries, branching DAGs (PARTIAL_UNWIND), all four product types, event-confirmation flows (upsert/bulk/AMEND-chain), and migration tracking (apply/skip/baseline/checksum-guard).
 
 ## Demo script
 
