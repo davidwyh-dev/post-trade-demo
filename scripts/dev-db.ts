@@ -42,14 +42,12 @@ async function main() {
   await pg.start();
   console.log(`[dev-db] running on ${DATABASE_URL}`);
 
-  try {
-    await applyMigrations(DATABASE_URL, path.resolve(process.cwd(), 'drizzle'));
-    console.log('[dev-db] migrations applied (idempotent failures expected on re-run; pass --fresh to reset)');
-  } catch {
-    if (!fresh) {
-      console.log('[dev-db] migrations skipped (already applied). Pass --fresh to reset.');
-    }
-  }
+  // schema_migrations tracking makes this safe to call on every dev:db run —
+  // already-applied files are skipped by checksum.
+  const r = await applyMigrations(DATABASE_URL, path.resolve(process.cwd(), 'drizzle'));
+  console.log(
+    `[dev-db] migrations: ${r.applied.length} applied, ${r.skipped.length} skipped`,
+  );
 
   console.log('[dev-db] ready. Ctrl+C to stop.');
   await new Promise(() => {});
