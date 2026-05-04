@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getReaderSql } from '@/lib/db/client';
 import { listEventsByDateRange } from '@/lib/positions/query';
 import { listEvents as listEventsForPosition } from '@/lib/positions/query';
+import { toPositionError } from '@/lib/positions/errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,19 +33,26 @@ export async function GET(req: Request) {
     );
   }
 
-  const sql = getReaderSql();
-  const events = await listEventsByDateRange(sql, from, to);
+  // Wrap the DB query so the client sees a proper JSON error instead of an
+  // empty 500 body. The most likely cause of a throw here is the
+  // event_confirmations table not existing yet (migration 0002 not applied).
+  try {
+    const sql = getReaderSql();
+    const events = await listEventsByDateRange(sql, from, to);
 
-  // For amendment-chain resolution we need ALL events on each touched position,
-  // not just those in the date window — an AMEND that restates a prior event
-  // could fall outside the filter. Load once per distinct position.
-  const positionIds = Array.from(new Set(events.map((e) => e.positionId)));
-  const allByPosition: Record<number, Awaited<ReturnType<typeof listEventsForPosition>>> = {};
-  await Promise.all(
-    positionIds.map(async (pid) => {
-      allByPosition[pid] = await listEventsForPosition(sql, pid);
-    }),
-  );
+    // For amendment-chain resolution we need ALL events on each touched position,
+    // not just those in the date window — an AMEND that restates a prior event
+    // could fall outside the filter. Load once per distinct position.
+    const positionIds = Array.from(new Set(events.map((e) => e.positionId)));
+    const allByPosition: Record<number, Awaited<ReturnType<typeof listEventsForPosition>>> = {};
+    await Promise.all(
+      positionIds.map(async (pid) => {
+        allByPosition[pid] = await listEventsForPosition(sql, pid);
+      }),
+    );
 
-  return NextResponse.json({ ok: true, events, allEventsByPosition: allByPosition });
+    return NextResponse.json({ ok: true, events, allEventsByPosition: allByPosition });
+  } catch (err) {
+    return NextResponse.json({ ok: false, error: toPositionError(err) }, { status: 500 });
+  }
 }
