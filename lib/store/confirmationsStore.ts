@@ -11,6 +11,17 @@ export type ConfirmationFilter = {
   confirmationStatus?: 'PENDING' | 'AMOUNT_CONFIRMED' | 'SETTLED';
 };
 
+/**
+ * Per-event reconciliation result returned by the confirmations parser when
+ * the operator submits PDF attachments. In-memory only — cleared on reload
+ * and not persisted on the Confirmation row.
+ */
+export type ReconcileResult = {
+  status: 'MATCH' | 'MISMATCH';
+  confidence: number;       // 0..1, model-reported
+  reasons: string[];        // short bullets, model-reported
+};
+
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -26,6 +37,8 @@ type State = {
   loading: boolean;
   cliText: string;
   cliBusy: boolean;
+  /** Reconciliation results keyed by event id. Cleared on reload. */
+  reconciliation: Record<number, ReconcileResult>;
 
   setEvents: (events: EnrichedEvent[], allByPosition: Record<number, Event[]>) => void;
   setLoading: (v: boolean) => void;
@@ -41,6 +54,9 @@ type State = {
 
   setCliText: (text: string) => void;
   setCliBusy: (busy: boolean) => void;
+
+  setReconciliation: (results: Record<number, ReconcileResult>) => void;
+  clearReconciliation: () => void;
 };
 
 export const useConfirmationsStore = create<State>((set) => ({
@@ -52,17 +68,25 @@ export const useConfirmationsStore = create<State>((set) => ({
   loading: false,
   cliText: '',
   cliBusy: false,
+  reconciliation: {},
 
   setEvents: (events, allByPosition) =>
     set((s) => {
       // Drop selections that are no longer in the visible set.
       const visibleIds = new Set(events.map((e) => e.id));
       const stillSelected = s.selectedEventIds.filter((id) => visibleIds.has(id));
+      // Drop reconciliation results for events no longer visible.
+      const reconciliation: Record<number, ReconcileResult> = {};
+      for (const id of Object.keys(s.reconciliation)) {
+        const numId = Number(id);
+        if (visibleIds.has(numId)) reconciliation[numId] = s.reconciliation[numId];
+      }
       return {
         events,
         allEventsByPosition: allByPosition,
         selectedEventIds: stillSelected,
         paginatedIndex: stillSelected.length === 0 ? 0 : Math.min(s.paginatedIndex, stillSelected.length - 1),
+        reconciliation,
       };
     }),
 
@@ -118,6 +142,9 @@ export const useConfirmationsStore = create<State>((set) => ({
 
   setCliText: (cliText) => set({ cliText }),
   setCliBusy: (cliBusy) => set({ cliBusy }),
+
+  setReconciliation: (reconciliation) => set({ reconciliation }),
+  clearReconciliation: () => set({ reconciliation: {} }),
 }));
 
 /** Predicate against the in-memory events list. Mirrors what `eventTypes`,

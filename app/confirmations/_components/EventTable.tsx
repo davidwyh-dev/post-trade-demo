@@ -13,6 +13,10 @@ const STATUS_CLASS: Record<ConfirmationStatus, string> = {
   SETTLED:          'bg-status-open/15 text-status-open',
 };
 
+/** Confidence floor below which we don't tint the row. The model is told this
+ * threshold; rows above it carry visual weight, rows below stay neutral. */
+const RECONCILE_CONFIDENCE_THRESHOLD = 0.85;
+
 export function EventTable({ onReload }: { onReload: () => void }) {
   const events             = useConfirmationsStore((s) => s.events);
   const allByPosition      = useConfirmationsStore((s) => s.allEventsByPosition);
@@ -23,6 +27,7 @@ export function EventTable({ onReload }: { onReload: () => void }) {
   const selectAllVisible   = useConfirmationsStore((s) => s.selectAllVisible);
   const clearSelection     = useConfirmationsStore((s) => s.clearSelection);
   const loading            = useConfirmationsStore((s) => s.loading);
+  const reconciliation     = useConfirmationsStore((s) => s.reconciliation);
 
   const filtered = useMemo(() => applyClientFilter(events, filter), [events, filter]);
   const allChecked = filtered.length > 0 && selectedIds.length === filtered.length;
@@ -105,12 +110,20 @@ export function EventTable({ onReload }: { onReload: () => void }) {
               const cf = deriveCashFlow(e, e.position, fullChain);
               const status = deriveConfirmationStatus(e.confirmation);
               const checked = selectedIds.includes(e.id);
+              const recon = reconciliation[e.id];
+              const tinted = recon && recon.confidence >= RECONCILE_CONFIDENCE_THRESHOLD;
+              const tintTitle = recon && recon.reasons.length > 0
+                ? `${recon.status} (${Math.round(recon.confidence * 100)}%)\n• ${recon.reasons.join('\n• ')}`
+                : undefined;
               return (
                 <tr
                   key={e.id}
                   onClick={() => toggleSelect(e.id)}
+                  title={tintTitle}
                   className={cn(
                     'cursor-pointer border-b border-border hover:bg-panel-elevated transition-colors',
+                    tinted && recon.status === 'MATCH'    && 'bg-status-open/15 hover:bg-status-open/25',
+                    tinted && recon.status === 'MISMATCH' && 'bg-invariant/15 hover:bg-invariant/25',
                     checked && 'bg-accent/15 hover:bg-accent/20',
                   )}
                 >

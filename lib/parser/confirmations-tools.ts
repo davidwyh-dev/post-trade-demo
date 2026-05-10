@@ -48,4 +48,36 @@ export const CONFIRMATIONS_PARSE_TOOLS = [
       additionalProperties: false,
     },
   },
+  {
+    name: 'reconcile_events',
+    description:
+      'Compare economic details extracted from one or more attached PDF documents (typically counterparty confirmation emails) against the visible events. Use when PDF attachments are present. Emit one entry per visible event you can form an opinion on; omit events the documents do not address. Only emit MATCH or MISMATCH when the comparison is unambiguous on at least one key economic field; use confidence to express certainty.',
+    input_schema: {
+      type: 'object' as const,
+      properties: {
+        matches: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              eventId:    { type: 'integer', description: 'ID from the VisibleEvents block.' },
+              status:     { type: 'string', enum: ['MATCH', 'MISMATCH'] },
+              confidence: { type: 'number', minimum: 0, maximum: 1 },
+              reasons: {
+                type: 'array',
+                description: 'Short, human-readable bullet points: which fields agreed/disagreed and the values seen. One sentence each.',
+                items: { type: 'string' },
+              },
+            },
+            required: ['eventId', 'status', 'confidence', 'reasons'],
+            additionalProperties: false,
+          },
+        },
+        confidence: { type: 'number', minimum: 0, maximum: 1, description: 'Overall confidence across the document set.' },
+        summary:    { type: 'string', description: 'One-sentence plain-English summary of the reconciliation outcome.' },
+      },
+      required: ['matches', 'confidence', 'summary'],
+      additionalProperties: false,
+    },
+  },
 ];
